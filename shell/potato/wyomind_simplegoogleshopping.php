@@ -1,0 +1,1 @@
+../../.modman/mage_simple_google_shopping/shell/wyomind_simplegoogleshopping.php
