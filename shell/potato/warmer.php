@@ -1,6 +1,6 @@
 <?php
 
-require_once '../abstract.php';
+require_once __DIR__ . '/../abstract.php';
 class Potato_Shell_Warmer extends Mage_Shell_Abstract
 {
     const LOCK_FILE_NAME = 'warmer.lock';
@@ -22,7 +22,10 @@ class Potato_Shell_Warmer extends Mage_Shell_Abstract
     protected function _isLocked()
     {
         if (file_exists(__DIR__ . '/' . self::LOCK_FILE_NAME)) {
-            return true;
+            $diff = time() - filemtime(__DIR__ . '/' . self::LOCK_FILE_NAME);
+            if ($diff < 900) {
+                return true;
+            }
         }
         file_put_contents(__DIR__ . '/' . self::LOCK_FILE_NAME, getmypid());
         return false;

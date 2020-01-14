@@ -31,6 +31,11 @@ class Potato_Crawler_Model_Cron_Warmer
         return $this;
     }
 
+    protected function _updateLock()
+    {
+        file_put_contents(BP . '/shell/potato/' . Potato_Shell_Warmer::LOCK_FILE_NAME, getmypid());
+    }
+
     /**
      * @param Potato_Crawler_Model_Resource_Queue_Collection $collection
      * @return $this
@@ -45,6 +50,8 @@ class Potato_Crawler_Model_Cron_Warmer
                 return $this;
             }
 
+            $this->_updateLock();
+
             /**
              * Prepare crawler options
              */
@@ -55,35 +62,34 @@ class Potato_Crawler_Model_Cron_Warmer
                 CURLOPT_CONNECTTIMEOUT => 30,
                 CURLOPT_FAILONERROR    => true,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_COOKIE         => $this->_getCookie($item)
+                CURLOPT_COOKIE         => $this->_getCookie($item),
+                CURLOPT_FOLLOWLOCATION => true
             );
 
             if (!Potato_Crawler_Helper_Warmer::isWin()) {
                 while (!$threads = $this->_getThreadCount()) {
                     //wait while cpu overload
                     sleep(self::WAITING_TIMEOUT);
+                    $this->_acceptableCpu = Mage::helper('po_crawler/warmer')->getAcceptableLoadAverage();
                 }
             }
             //prepare options hash
             $hash = md5(implode(',', $options));
-            if (isset($prevHash) && isset($prevOptions) && $hash != $prevHash) {
-                //if current option hach != current hash do request with prev options
-                $this->_multiRequest($urls, $prevOptions);
-                //reset urls container and thread value
-                $urls = array();
-                $threads = $this->_getThreadCount();
+
+            if (!array_key_exists($hash, $urls)) {
+                $urls[$hash] = array(
+                    'urls' => array(),
+                    'options' => array()
+                );
             }
+            $urls[$hash]['urls'][] = $item->getUrl();
+            $urls[$hash]['options'] = $options;
 
-            $prevHash = $hash;
-            $prevOptions = $options;
-
-            $urls[] = $item->getUrl();
-
-            if (count($urls) == $threads) {
+            if (count($urls[$hash]['urls']) >= $threads) {
                 //if count prepared urls = thread value -> do request
-                $this->_multiRequest($urls, $options);
+                $this->_multiRequest($urls[$hash]['urls'], $urls[$hash]['options']);
                 //reset urls container and thread value
-                $urls = array();
+                $urls[$hash]['urls'] = array();
                 $threads = $this->_getThreadCount();
             }
 
@@ -95,9 +101,11 @@ class Potato_Crawler_Model_Cron_Warmer
             }
         }
 
-        if (!empty($urls)) {
-            //if url container not empty -> do request
-            $this->_multiRequest($urls, $options);
+        foreach ($urls as $hash => $params) {
+            if (empty($params['urls'])) {
+                continue;
+            }
+            $this->_multiRequest($params['urls'], $params['options']);
         }
         return $this;
     }

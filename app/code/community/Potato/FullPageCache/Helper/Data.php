@@ -105,7 +105,7 @@ class Potato_FullPageCache_Helper_Data extends Mage_Core_Helper_Abstract
             //remove index.php from request for exclude duplicate like example.com and example.com/index.php
             $uri = str_replace('/index.php', '', $uri);
         }
-        return rawurldecode($uri);
+        return $uri;
     }
 
     /**

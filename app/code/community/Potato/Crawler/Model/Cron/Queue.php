@@ -89,6 +89,7 @@ class Potato_Crawler_Model_Cron_Queue
             //sort by protocol
             foreach (Potato_Crawler_Helper_Config::getProtocol($store) as $protocolPriority => $protocol) {
                 $baseUrl = Potato_Crawler_Helper_Queue::getStoreBaseUrl($store, $protocol);
+                $this->_updateLock();
                 foreach ($urls as $url) {
                     $helper->addUrl(htmlspecialchars($baseUrl . $url), $store, $pagePriority . $protocolPriority);
                 }
@@ -115,5 +116,10 @@ class Potato_Crawler_Model_Cron_Queue
             }
         }
         return $this;
+    }
+
+    protected function _updateLock()
+    {
+        file_put_contents(BP . '/shell/potato/' . Potato_Shell_Warmer_Queue::LOCK_FILE_NAME, getmypid());
     }
 }

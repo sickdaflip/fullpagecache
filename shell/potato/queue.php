@@ -82,7 +82,10 @@ class Potato_Shell_Warmer_Queue extends Mage_Shell_Abstract
     protected function _isLocked()
     {
         if (file_exists(__DIR__ . '/' . self::LOCK_FILE_NAME)) {
-            return true;
+            $diff = time() - filemtime(__DIR__ . '/' . self::LOCK_FILE_NAME);
+            if ($diff < 1800) {
+                return true;
+            }
         }
         file_put_contents(__DIR__ . '/' . self::LOCK_FILE_NAME, getmypid());
         return false;
