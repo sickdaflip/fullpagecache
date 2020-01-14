@@ -17,6 +17,6 @@ app/locale/en_US/Potato_Core.csv    app/locale/en_US/Potato_Core.csv
 app/locale/en_US/Potato_FullPageCache.csv   app/locale/en_US/Potato_FullPageCache.csv
 lib/Potato/Fpc/Mobile/Detect.php    lib/Potato/Fpc/Mobile/Detect.php
 shell/potato/*    shell/potato
-skin/adminhtml/default/default/po_core  skin/adminhtml/default/default/po_core
-skin/adminhtml/default/default/po_crawler   skin/adminhtml/default/default/po_crawler
+skin/adminhtml/base/default/po_core  skin/adminhtml/base/default/po_core
+skin/adminhtml/base/default/po_crawler   skin/adminhtml/base/default/po_crawler
 skin/frontend/base/default/po_fpc/css/styles.css    skin/frontend/base/default/po_fpc/css/styles.css
